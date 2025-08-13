@@ -3,43 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase オンライン将棋ゲーム</title>
+    <title>将棋ゲーム - GitHub Pages版</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #f0e6d2;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
         
-        .game-container {
-            text-align: center;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            max-width: 900px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         h1 {
-            color: #5a4a3a;
-            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
         }
         
-        .room-controls {
+        .controls {
+            text-align: center;
             margin-bottom: 20px;
             padding: 15px;
             background-color: #f9f9f9;
             border-radius: 5px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            font-size: 16px;
             border: 1px solid #ddd;
+            border-radius: 3px;
         }
         
         .room-info {
-            margin: 10px 0;
-            padding: 10px;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
             background-color: #e8f5e9;
             border-radius: 5px;
             display: none;
@@ -49,140 +76,86 @@
             display: block;
         }
         
-        .room-id {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2e7d32;
-            letter-spacing: 2px;
-            user-select: all;
-            cursor: pointer;
-        }
-        
-        .copy-hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .connection-status {
-            margin: 10px 0;
-            padding: 8px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        
-        .connected {
-            background-color: #c8e6c9;
-            color: #2e7d32;
-        }
-        
-        .disconnected {
-            background-color: #ffcdd2;
-            color: #c62828;
-        }
-        
-        .waiting {
-            background-color: #fff9c4;
-            color: #f57f17;
-        }
-        
-        .board {
-            display: inline-grid;
-            grid-template-columns: repeat(9, 60px);
-            grid-template-rows: repeat(9, 60px);
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(9, 50px);
+            grid-template-rows: repeat(9, 50px);
             gap: 1px;
-            background-color: #8b7355;
-            padding: 10px;
-            border: 3px solid #5a4a3a;
-            border-radius: 5px;
             margin: 20px auto;
+            background-color: #8B4513;
+            padding: 10px;
+            border: 3px solid #654321;
+            width: fit-content;
         }
         
         .cell {
-            background-color: #f5deb3;
-            border: 1px solid #8b7355;
+            width: 50px;
+            height: 50px;
+            background-color: #DEB887;
+            border: 1px solid #8B4513;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
-            position: relative;
-            transition: background-color 0.3s;
         }
         
         .cell:hover {
-            background-color: #e5cea3;
+            background-color: #F5DEB3;
         }
         
         .cell.selected {
-            background-color: #90ee90 !important;
+            background-color: #90EE90;
         }
         
         .cell.possible-move {
-            background-color: #ffd700 !important;
-        }
-        
-        .cell.last-move {
-            background-color: #b3d9ff !important;
+            background-color: #FFD700;
         }
         
         .piece {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 5px;
-            font-size: 20px;
-            font-weight: bold;
+            color: #333;
             user-select: none;
-        }
-        
-        .piece.sente {
-            background-color: #ffffff;
-            color: #000000;
-            border: 2px solid #333;
+            font-size: 16px;
         }
         
         .piece.gote {
-            background-color: #333333;
-            color: #ffffff;
-            border: 2px solid #000;
             transform: rotate(180deg);
+            color: #000;
         }
         
-        .info-panel {
-            margin-top: 20px;
+        .piece.sente {
+            color: #000;
+        }
+        
+        .game-info {
+            text-align: center;
+            margin: 20px 0;
             padding: 15px;
-            background-color: #f9f9f9;
+            background-color: #f0f8ff;
             border-radius: 5px;
-            border: 1px solid #ddd;
         }
         
         .current-player {
             font-size: 18px;
             font-weight: bold;
-            color: #5a4a3a;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            color: #333;
         }
         
-        .player-role {
-            font-size: 16px;
-            padding: 8px;
-            margin: 10px 0;
-            background-color: #e3f2fd;
-            border-radius: 5px;
-            color: #1565c0;
-            font-weight: bold;
+        .captured-area {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
         }
         
         .captured-pieces {
-            margin-top: 10px;
             padding: 10px;
             background-color: #fff;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            min-height: 50px;
+            min-height: 60px;
+            width: 200px;
         }
         
         .captured-pieces h3 {
@@ -191,222 +164,67 @@
             color: #666;
         }
         
-        .captured-piece {
-            display: inline-block;
-            margin: 2px;
-            padding: 5px 8px;
-            font-size: 18px;
-            border-radius: 3px;
-            cursor: pointer;
-            background-color: #f5deb3;
-            border: 2px solid #8b7355;
-            transition: background-color 0.3s;
-        }
-        
-        .captured-piece:hover {
-            background-color: #e5cea3;
-        }
-        
-        .captured-piece.selected {
-            background-color: #90ee90;
-            border-color: #5a4a3a;
-        }
-        
-        button {
-            margin: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #5a4a3a;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #4a3a2a;
-        }
-        
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        
-        input[type="text"] {
-            padding: 8px;
-            font-size: 16px;
-            border: 2px solid #8b7355;
-            border-radius: 5px;
-            margin: 5px;
-            text-transform: uppercase;
-        }
-        
-        .mode-selector {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        
-        .mode-selector label {
-            margin-right: 15px;
-            font-weight: bold;
-            color: #5a4a3a;
-        }
-        
-        .mode-selector select {
-            padding: 5px 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #8b7355;
-        }
-        
-        .fog-cell {
-            background-color: #666 !important;
-            opacity: 0.3;
-        }
-        
-        .visible-cell {
-            opacity: 1 !important;
-        }
-        
-        .game-over {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-            z-index: 1000;
-            display: none;
-        }
-        
-        .game-over.show {
-            display: block;
-        }
-        
-        .game-over h2 {
-            color: #5a4a3a;
-            margin-bottom: 20px;
-        }
-        
-        .promotion-dialog {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.3);
-            z-index: 1000;
-            display: none;
-            text-align: center;
-        }
-        
-        .promotion-dialog.show {
-            display: block;
-        }
-        
-        .promotion-dialog h3 {
-            color: #5a4a3a;
-            margin-bottom: 15px;
-        }
-        
-        .promotion-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .promotion-buttons button {
-            margin: 0;
-        }
-        
         .firebase-status {
             position: fixed;
             top: 10px;
             right: 10px;
-            padding: 8px 12px;
-            border-radius: 5px;
+            padding: 5px 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
             font-size: 12px;
-            font-weight: bold;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
-        .firebase-connected {
-            color: #2e7d32;
-            border: 1px solid #2e7d32;
+        .status-connected {
+            border-color: #4CAF50;
+            color: #4CAF50;
         }
         
-        .firebase-disconnected {
-            color: #c62828;
-            border: 1px solid #c62828;
-        }
-        
-        .opponent-status {
-            margin: 10px 0;
-            padding: 5px;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .opponent-online {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .opponent-offline {
-            background-color: #ffebee;
-            color: #c62828;
+        .status-disconnected {
+            border-color: #f44336;
+            color: #f44336;
         }
     </style>
 </head>
 <body>
-    <div class="firebase-status firebase-disconnected" id="firebaseStatus">
+    <!-- Firebase接続状態表示 -->
+    <div id="firebaseStatus" class="firebase-status status-disconnected">
         Firebase: 未接続
     </div>
-    
-    <div class="game-container">
+
+    <div class="container">
+        <!-- ゲームタイトル -->
         <h1>Firebase オンライン将棋ゲーム</h1>
-        <div style="margin-bottom: 15px;">
-            <a href="games.html" style="color: #667eea; text-decoration: none; font-size: 14px;">
-                📱 オフライン対戦も可能 →
-            </a>
+        
+        <!-- 部屋作成・参加コントロール -->
+        <div class="controls">
+            <button id="createRoomBtn">部屋を作成</button>
+            <span>または</span>
+            <input type="text" id="roomIdInput" placeholder="部屋ID" maxlength="6">
+            <button id="joinRoomBtn">部屋に参加</button>
         </div>
         
-        <div class="room-controls">
-            <button id="createRoomBtn" onclick="createRoom()">部屋を作成</button>
-            <div style="margin: 10px 0;">または</div>
-            <input type="text" id="roomIdInput" placeholder="部屋IDを入力" maxlength="6">
-            <button id="joinRoomBtn" onclick="joinRoom()">部屋に参加</button>
+        <!-- 部屋情報 -->
+        <div id="roomInfo" class="room-info">
+            <p>部屋ID: <strong id="roomId"></strong></p>
+            <p id="playerRole"></p>
+            <p id="connectionStatus">対戦相手を待っています...</p>
         </div>
         
-        <div class="room-info" id="roomInfo">
-            <div>部屋ID: <span class="room-id" id="roomId" onclick="copyRoomId()"></span></div>
-            <div class="copy-hint">クリックでコピー</div>
-            <div class="player-role" id="playerRole"></div>
-            <div class="connection-status waiting" id="connectionStatus">対戦相手を待っています...</div>
-            <div class="opponent-status" id="opponentStatus"></div>
+        <!-- ゲーム情報 -->
+        <div class="game-info">
+            <div id="currentPlayer" class="current-player">先手の番</div>
+            <button id="resetBtn">ゲームリセット</button>
+            <button id="leaveBtn" style="background-color: #f44336;">部屋を退出</button>
         </div>
         
-        <div class="mode-selector">
-            <label for="gameMode">ゲームモード:</label>
-            <select id="gameMode" onchange="changeGameMode()">
-                <option value="standard">標準モード</option>
-                <option value="fog">霧モード（自分の駒の移動範囲のみ表示）</option>
-            </select>
+        <!-- 将棋盤 -->
+        <div id="gameBoard" class="game-board">
+            <!-- 81個のセルがJavaScriptで生成される -->
         </div>
         
-        <div class="board" id="board"></div>
-        
-        <div class="info-panel">
-            <div class="current-player" id="currentPlayer">ゲーム開始を待っています</div>
+        <!-- 持ち駒表示 -->
+        <div class="captured-area">
             <div class="captured-pieces">
                 <h3>先手の持ち駒</h3>
                 <div id="senteCaptured"></div>
@@ -415,33 +233,313 @@
                 <h3>後手の持ち駒</h3>
                 <div id="goteCaptured"></div>
             </div>
-            <button onclick="resetGame()" id="resetBtn">ゲームをリセット</button>
-            <button onclick="leaveRoom()" id="leaveBtn" style="background-color: #c62828;">部屋を退出</button>
         </div>
     </div>
-    
-    <div class="game-over" id="gameOver">
-        <h2 id="winnerText"></h2>
-        <button onclick="resetGame()">新しいゲーム</button>
-        <button onclick="leaveRoom()" style="background-color: #c62828;">部屋を退出</button>
-    </div>
-    
-    <div class="promotion-dialog" id="promotionDialog">
-        <h3>成りますか？</h3>
-        <div class="promotion-buttons">
-            <button onclick="handlePromotion(true)">成る</button>
-            <button onclick="handlePromotion(false)">成らず</button>
-        </div>
-    </div>
-    
-    <!-- Firebase SDKs -->
+
+    <!-- Firebase SDK (compat版) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
-    <!-- Firebase設定ファイル -->
-    <script src="firebase-config.js"></script>
-    
-    <!-- ゲームロジック -->
-    <script src="shogi-firebase.js"></script>
+
+    <script>
+        console.log('スクリプト開始');
+        
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwt915Kv7R_nYFglNbidmqMNO1DTqiTNA",
+            authDomain: "shogi-13c49.firebaseapp.com", 
+            databaseURL: "https://shogi-13c49-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "shogi-13c49",
+            storageBucket: "shogi-13c49.firebasestorage.app",
+            messagingSenderId: "780266585204",
+            appId: "1:780266585204:web:94010435@c1a103d973d21",
+            measurementId: "G-D77KZJZXKX"
+        };
+
+        // グローバル変数
+        let database = null;
+        let roomRef = null;
+        let playerRole = null;
+        let roomId = null;
+        let currentPlayer = 'sente';
+        let gameBoard = [];
+        let selectedCell = null;
+        
+        // 駒の種類とその表示
+        const pieceSymbols = {
+            'K': '王', 'R': '飛', 'B': '角', 'G': '金',
+            'S': '銀', 'N': '桂', 'L': '香', 'P': '歩'
+        };
+        
+        // 将棋盤の初期化
+        function initializeBoard() {
+            console.log('将棋盤初期化開始');
+            gameBoard = Array(9).fill(null).map(() => Array(9).fill(null));
+            
+            // 後手の駒配置
+            gameBoard[0] = ['L', 'N', 'S', 'G', 'K', 'G', 'S', 'N', 'L'].map(p => ({type: p, owner: 'gote'}));
+            gameBoard[1][1] = {type: 'R', owner: 'gote'};
+            gameBoard[1][7] = {type: 'B', owner: 'gote'};
+            for(let i = 0; i < 9; i++) {
+                gameBoard[2][i] = {type: 'P', owner: 'gote'};
+            }
+            
+            // 先手の駒配置
+            for(let i = 0; i < 9; i++) {
+                gameBoard[6][i] = {type: 'P', owner: 'sente'};
+            }
+            gameBoard[7][1] = {type: 'B', owner: 'sente'};
+            gameBoard[7][7] = {type: 'R', owner: 'sente'};
+            gameBoard[8] = ['L', 'N', 'S', 'G', 'K', 'G', 'S', 'N', 'L'].map(p => ({type: p, owner: 'sente'}));
+            
+            console.log('将棋盤初期化完了');
+            renderBoard();
+        }
+        
+        // 将棋盤のレンダリング
+        function renderBoard() {
+            console.log('将棋盤レンダリング開始');
+            const boardElement = document.getElementById('gameBoard');
+            boardElement.innerHTML = '';
+            
+            for(let row = 0; row < 9; row++) {
+                for(let col = 0; col < 9; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    if(selectedCell && selectedCell[0] === row && selectedCell[1] === col) {
+                        cell.classList.add('selected');
+                    }
+                    
+                    const piece = gameBoard[row][col];
+                    if(piece) {
+                        const pieceElement = document.createElement('div');
+                        pieceElement.className = `piece ${piece.owner}`;
+                        pieceElement.textContent = pieceSymbols[piece.type] || piece.type;
+                        cell.appendChild(pieceElement);
+                    }
+                    
+                    cell.addEventListener('click', () => handleCellClick(row, col));
+                    boardElement.appendChild(cell);
+                }
+            }
+            
+            // 現在のプレイヤー表示を更新
+            document.getElementById('currentPlayer').textContent = 
+                currentPlayer === 'sente' ? '先手の番' : '後手の番';
+            
+            console.log('将棋盤レンダリング完了');
+        }
+        
+        // セルクリック処理
+        function handleCellClick(row, col) {
+            console.log(`セルクリック: (${row}, ${col})`);
+            
+            if(selectedCell) {
+                // 駒の移動
+                if(selectedCell[0] !== row || selectedCell[1] !== col) {
+                    movePiece(selectedCell[0], selectedCell[1], row, col);
+                }
+                selectedCell = null;
+            } else {
+                // 駒の選択
+                const piece = gameBoard[row][col];
+                if(piece && piece.owner === currentPlayer) {
+                    selectedCell = [row, col];
+                }
+            }
+            
+            renderBoard();
+        }
+        
+        // 駒の移動
+        function movePiece(fromRow, fromCol, toRow, toCol) {
+            console.log(`駒の移動: (${fromRow}, ${fromCol}) → (${toRow}, ${toCol})`);
+            
+            const piece = gameBoard[fromRow][fromCol];
+            if(!piece || piece.owner !== currentPlayer) {
+                console.log('無効な移動');
+                return;
+            }
+            
+            // 移動実行
+            gameBoard[toRow][toCol] = piece;
+            gameBoard[fromRow][fromCol] = null;
+            
+            // 手番交代
+            currentPlayer = currentPlayer === 'sente' ? 'gote' : 'sente';
+            
+            // Firebaseに送信（オンラインモードの場合）
+            if(roomRef) {
+                const moveData = {
+                    fromRow, fromCol, toRow, toCol,
+                    currentPlayer,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+                roomRef.child('moves').push(moveData);
+            }
+            
+            console.log(`手番交代: ${currentPlayer}`);
+        }
+        
+        // Firebase初期化
+        function initFirebase() {
+            console.log('Firebase初期化開始');
+            try {
+                if(typeof firebase === 'undefined') {
+                    console.error('Firebase SDK未読み込み');
+                    return;
+                }
+                
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                
+                // 接続状態監視
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    const connected = snapshot.val();
+                    const statusElement = document.getElementById('firebaseStatus');
+                    if(connected) {
+                        statusElement.textContent = 'Firebase: 接続中';
+                        statusElement.className = 'firebase-status status-connected';
+                        console.log('Firebase接続成功');
+                    } else {
+                        statusElement.textContent = 'Firebase: 未接続';
+                        statusElement.className = 'firebase-status status-disconnected';
+                        console.log('Firebase未接続');
+                    }
+                });
+                
+            } catch(error) {
+                console.error('Firebase初期化エラー:', error);
+            }
+        }
+        
+        // 部屋作成
+        function createRoom() {
+            console.log('部屋作成開始');
+            if(!database) {
+                alert('Firebaseに接続されていません');
+                return;
+            }
+            
+            roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            roomRef = database.ref(`rooms/${roomId}`);
+            playerRole = 'sente';
+            
+            roomRef.set({
+                created: firebase.database.ServerValue.TIMESTAMP,
+                currentPlayer: 'sente',
+                board: gameBoard
+            });
+            
+            // UI更新
+            document.getElementById('roomId').textContent = roomId;
+            document.getElementById('playerRole').textContent = 'あなたは先手です';
+            document.getElementById('roomInfo').classList.add('show');
+            document.getElementById('createRoomBtn').disabled = true;
+            document.getElementById('joinRoomBtn').disabled = true;
+            
+            console.log(`部屋作成完了: ${roomId}`);
+        }
+        
+        // 部屋参加
+        function joinRoom() {
+            console.log('部屋参加開始');
+            const inputRoomId = document.getElementById('roomIdInput').value.toUpperCase();
+            
+            if(!inputRoomId) {
+                alert('部屋IDを入力してください');
+                return;
+            }
+            
+            if(!database) {
+                alert('Firebaseに接続されていません');
+                return;
+            }
+            
+            roomId = inputRoomId;
+            roomRef = database.ref(`rooms/${roomId}`);
+            playerRole = 'gote'; // 参加者は後手
+            
+            // 部屋存在確認
+            roomRef.once('value', (snapshot) => {
+                if(!snapshot.exists()) {
+                    alert('部屋が存在しません');
+                    return;
+                }
+                
+                // UI更新
+                document.getElementById('roomId').textContent = roomId;
+                document.getElementById('playerRole').textContent = 'あなたは後手です';
+                document.getElementById('roomInfo').classList.add('show');
+                document.getElementById('createRoomBtn').disabled = true;
+                document.getElementById('joinRoomBtn').disabled = true;
+                
+                console.log(`部屋参加完了: ${roomId}`);
+            });
+        }
+        
+        // ゲームリセット
+        function resetGame() {
+            console.log('ゲームリセット');
+            currentPlayer = 'sente';
+            selectedCell = null;
+            initializeBoard();
+        }
+        
+        // 部屋退出
+        function leaveRoom() {
+            console.log('部屋退出');
+            roomRef = null;
+            playerRole = null;
+            roomId = null;
+            
+            // UI初期化
+            document.getElementById('roomInfo').classList.remove('show');
+            document.getElementById('createRoomBtn').disabled = false;
+            document.getElementById('joinRoomBtn').disabled = false;
+            document.getElementById('roomIdInput').value = '';
+            
+            resetGame();
+        }
+        
+        // イベントリスナー設定
+        function setupEventListeners() {
+            console.log('イベントリスナー設定');
+            document.getElementById('createRoomBtn').addEventListener('click', createRoom);
+            document.getElementById('joinRoomBtn').addEventListener('click', joinRoom);
+            document.getElementById('resetBtn').addEventListener('click', resetGame);
+            document.getElementById('leaveBtn').addEventListener('click', leaveRoom);
+        }
+        
+        // 初期化
+        function initialize() {
+            console.log('アプリケーション初期化開始');
+            
+            setupEventListeners();
+            initFirebase();
+            initializeBoard();
+            
+            console.log('アプリケーション初期化完了');
+        }
+        
+        // DOM読み込み完了後に初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM読み込み完了');
+            initialize();
+        });
+        
+        // バックアップ初期化（念のため）
+        window.addEventListener('load', function() {
+            console.log('window.load実行');
+            if(!database) {
+                console.log('バックアップ初期化実行');
+                initialize();
+            }
+        });
+        
+        console.log('スクリプト読み込み完了');
+    </script>
 </body>
 </html>
