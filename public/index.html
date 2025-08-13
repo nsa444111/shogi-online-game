@@ -3,41 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>将棋ゲーム - GitHub Pages版</title>
+    <title>オンライン将棋ゲーム</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
+            margin: 20px;
             padding: 20px;
             background-color: #f0f0f0;
         }
         
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
         h1 {
-            text-align: center;
             color: #333;
-            margin-bottom: 30px;
-        }
-        
-        .controls {
             text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
         }
         
         button {
             padding: 10px 20px;
-            margin: 5px;
+            margin: 10px;
             font-size: 16px;
             background-color: #4CAF50;
             color: white;
@@ -50,30 +32,26 @@
             background-color: #45a049;
         }
         
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        
-        input[type="text"] {
-            padding: 8px;
-            margin: 5px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        
-        .room-info {
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #e8f5e9;
+        #board {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border: 2px solid #333;
             border-radius: 5px;
-            display: none;
+            text-align: center;
+            max-width: 600px;
         }
         
-        .room-info.show {
-            display: block;
+        #status {
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 600px;
+            font-size: 18px;
+            font-weight: bold;
         }
         
         .game-board {
@@ -97,7 +75,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
         
@@ -105,142 +83,36 @@
             background-color: #F5DEB3;
         }
         
-        .cell.selected {
-            background-color: #90EE90;
-        }
-        
-        .cell.possible-move {
-            background-color: #FFD700;
-        }
-        
         .piece {
             color: #333;
             user-select: none;
-            font-size: 16px;
         }
         
         .piece.gote {
             transform: rotate(180deg);
-            color: #000;
-        }
-        
-        .piece.sente {
-            color: #000;
-        }
-        
-        .game-info {
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f0f8ff;
-            border-radius: 5px;
-        }
-        
-        .current-player {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .captured-area {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-        
-        .captured-pieces {
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            min-height: 60px;
-            width: 200px;
-        }
-        
-        .captured-pieces h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .firebase-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-        
-        .status-connected {
-            border-color: #4CAF50;
-            color: #4CAF50;
-        }
-        
-        .status-disconnected {
-            border-color: #f44336;
-            color: #f44336;
         }
     </style>
 </head>
 <body>
-    <!-- Firebase接続状態表示 -->
-    <div id="firebaseStatus" class="firebase-status status-disconnected">
-        Firebase: 未接続
+    <h1>オンライン将棋ゲーム</h1>
+    
+    <div>
+        <button id="createRoomBtn">部屋を作成</button>
+        <button id="joinRoomBtn">部屋に参加</button>
     </div>
-
-    <div class="container">
-        <!-- ゲームタイトル -->
-        <h1>Firebase オンライン将棋ゲーム</h1>
-        
-        <!-- 部屋作成・参加コントロール -->
-        <div class="controls">
-            <button id="createRoomBtn">部屋を作成</button>
-            <span>または</span>
-            <input type="text" id="roomIdInput" placeholder="部屋ID" maxlength="6">
-            <button id="joinRoomBtn">部屋に参加</button>
-        </div>
-        
-        <!-- 部屋情報 -->
-        <div id="roomInfo" class="room-info">
-            <p>部屋ID: <strong id="roomId"></strong></p>
-            <p id="playerRole"></p>
-            <p id="connectionStatus">対戦相手を待っています...</p>
-        </div>
-        
-        <!-- ゲーム情報 -->
-        <div class="game-info">
-            <div id="currentPlayer" class="current-player">先手の番</div>
-            <button id="resetBtn">ゲームリセット</button>
-            <button id="leaveBtn" style="background-color: #f44336;">部屋を退出</button>
-        </div>
-        
-        <!-- 将棋盤 -->
-        <div id="gameBoard" class="game-board">
-            <!-- 81個のセルがJavaScriptで生成される -->
-        </div>
-        
-        <!-- 持ち駒表示 -->
-        <div class="captured-area">
-            <div class="captured-pieces">
-                <h3>先手の持ち駒</h3>
-                <div id="senteCaptured"></div>
-            </div>
-            <div class="captured-pieces">
-                <h3>後手の持ち駒</h3>
-                <div id="goteCaptured"></div>
-            </div>
-        </div>
-    </div>
+    
+    <div id="board">将棋盤がここに表示されます</div>
+    
+    <div id="status">ゲーム状態</div>
 
     <!-- Firebase SDK (compat版) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
+        // 最初にページ読み込み完了をテスト
+        alert('ページ読み込み完了');
+        
         console.log('スクリプト開始');
         
         // Firebase設定
@@ -257,12 +129,8 @@
 
         // グローバル変数
         let database = null;
-        let roomRef = null;
-        let playerRole = null;
-        let roomId = null;
         let currentPlayer = 'sente';
         let gameBoard = [];
-        let selectedCell = null;
         
         // 駒の種類とその表示
         const pieceSymbols = {
@@ -273,6 +141,8 @@
         // 将棋盤の初期化
         function initializeBoard() {
             console.log('将棋盤初期化開始');
+            
+            // 9x9の空の盤面を作成
             gameBoard = Array(9).fill(null).map(() => Array(9).fill(null));
             
             // 後手の駒配置
@@ -295,222 +165,105 @@
             renderBoard();
         }
         
-        // 将棋盤のレンダリング
+        // document.getElementById('board')を使って盤面を描画
         function renderBoard() {
             console.log('将棋盤レンダリング開始');
-            const boardElement = document.getElementById('gameBoard');
-            boardElement.innerHTML = '';
             
+            const boardElement = document.getElementById('board');
+            
+            // 盤面コンテナを作成
+            let boardHTML = '<div class="game-board">';
+            
+            // 9x9のセルを作成
             for(let row = 0; row < 9; row++) {
                 for(let col = 0; col < 9; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.dataset.row = row;
-                    cell.dataset.col = col;
-                    
-                    if(selectedCell && selectedCell[0] === row && selectedCell[1] === col) {
-                        cell.classList.add('selected');
-                    }
-                    
                     const piece = gameBoard[row][col];
+                    let pieceHTML = '';
+                    
                     if(piece) {
-                        const pieceElement = document.createElement('div');
-                        pieceElement.className = `piece ${piece.owner}`;
-                        pieceElement.textContent = pieceSymbols[piece.type] || piece.type;
-                        cell.appendChild(pieceElement);
+                        const symbol = pieceSymbols[piece.type] || piece.type;
+                        pieceHTML = `<div class="piece ${piece.owner}">${symbol}</div>`;
                     }
                     
-                    cell.addEventListener('click', () => handleCellClick(row, col));
-                    boardElement.appendChild(cell);
+                    boardHTML += `<div class="cell" data-row="${row}" data-col="${col}">${pieceHTML}</div>`;
                 }
             }
             
-            // 現在のプレイヤー表示を更新
-            document.getElementById('currentPlayer').textContent = 
-                currentPlayer === 'sente' ? '先手の番' : '後手の番';
+            boardHTML += '</div>';
+            
+            // 盤面を表示
+            boardElement.innerHTML = boardHTML;
+            
+            // セルにクリックイベントを追加
+            const cells = boardElement.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.addEventListener('click', function() {
+                    const row = parseInt(this.dataset.row);
+                    const col = parseInt(this.dataset.col);
+                    console.log(`セルクリック: (${row}, ${col})`);
+                    handleCellClick(row, col);
+                });
+            });
+            
+            // 状態表示を更新
+            updateStatus();
             
             console.log('将棋盤レンダリング完了');
         }
         
         // セルクリック処理
         function handleCellClick(row, col) {
-            console.log(`セルクリック: (${row}, ${col})`);
+            console.log(`セルクリック処理: (${row}, ${col})`);
+            const piece = gameBoard[row][col];
             
-            if(selectedCell) {
-                // 駒の移動
-                if(selectedCell[0] !== row || selectedCell[1] !== col) {
-                    movePiece(selectedCell[0], selectedCell[1], row, col);
-                }
-                selectedCell = null;
+            if(piece) {
+                console.log(`駒: ${piece.type} (${piece.owner})`);
+                updateStatus(`${piece.owner}の${pieceSymbols[piece.type]}がクリックされました`);
             } else {
-                // 駒の選択
-                const piece = gameBoard[row][col];
-                if(piece && piece.owner === currentPlayer) {
-                    selectedCell = [row, col];
-                }
+                console.log('空のマス');
+                updateStatus(`空のマス (${row}, ${col}) がクリックされました`);
             }
-            
-            renderBoard();
         }
         
-        // 駒の移動
-        function movePiece(fromRow, fromCol, toRow, toCol) {
-            console.log(`駒の移動: (${fromRow}, ${fromCol}) → (${toRow}, ${toCol})`);
-            
-            const piece = gameBoard[fromRow][fromCol];
-            if(!piece || piece.owner !== currentPlayer) {
-                console.log('無効な移動');
-                return;
+        // 状態表示を更新
+        function updateStatus(message = null) {
+            const statusElement = document.getElementById('status');
+            if(message) {
+                statusElement.textContent = message;
+            } else {
+                statusElement.textContent = `現在: ${currentPlayer === 'sente' ? '先手' : '後手'}の番`;
             }
-            
-            // 移動実行
-            gameBoard[toRow][toCol] = piece;
-            gameBoard[fromRow][fromCol] = null;
-            
-            // 手番交代
-            currentPlayer = currentPlayer === 'sente' ? 'gote' : 'sente';
-            
-            // Firebaseに送信（オンラインモードの場合）
-            if(roomRef) {
-                const moveData = {
-                    fromRow, fromCol, toRow, toCol,
-                    currentPlayer,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                };
-                roomRef.child('moves').push(moveData);
-            }
-            
-            console.log(`手番交代: ${currentPlayer}`);
         }
         
         // Firebase初期化
         function initFirebase() {
             console.log('Firebase初期化開始');
             try {
-                if(typeof firebase === 'undefined') {
+                if(typeof firebase !== 'undefined') {
+                    firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    console.log('Firebase初期化成功');
+                } else {
                     console.error('Firebase SDK未読み込み');
-                    return;
                 }
-                
-                firebase.initializeApp(firebaseConfig);
-                database = firebase.database();
-                
-                // 接続状態監視
-                database.ref('.info/connected').on('value', (snapshot) => {
-                    const connected = snapshot.val();
-                    const statusElement = document.getElementById('firebaseStatus');
-                    if(connected) {
-                        statusElement.textContent = 'Firebase: 接続中';
-                        statusElement.className = 'firebase-status status-connected';
-                        console.log('Firebase接続成功');
-                    } else {
-                        statusElement.textContent = 'Firebase: 未接続';
-                        statusElement.className = 'firebase-status status-disconnected';
-                        console.log('Firebase未接続');
-                    }
-                });
-                
             } catch(error) {
                 console.error('Firebase初期化エラー:', error);
             }
         }
         
-        // 部屋作成
-        function createRoom() {
-            console.log('部屋作成開始');
-            if(!database) {
-                alert('Firebaseに接続されていません');
-                return;
-            }
-            
-            roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-            roomRef = database.ref(`rooms/${roomId}`);
-            playerRole = 'sente';
-            
-            roomRef.set({
-                created: firebase.database.ServerValue.TIMESTAMP,
-                currentPlayer: 'sente',
-                board: gameBoard
-            });
-            
-            // UI更新
-            document.getElementById('roomId').textContent = roomId;
-            document.getElementById('playerRole').textContent = 'あなたは先手です';
-            document.getElementById('roomInfo').classList.add('show');
-            document.getElementById('createRoomBtn').disabled = true;
-            document.getElementById('joinRoomBtn').disabled = true;
-            
-            console.log(`部屋作成完了: ${roomId}`);
-        }
-        
-        // 部屋参加
-        function joinRoom() {
-            console.log('部屋参加開始');
-            const inputRoomId = document.getElementById('roomIdInput').value.toUpperCase();
-            
-            if(!inputRoomId) {
-                alert('部屋IDを入力してください');
-                return;
-            }
-            
-            if(!database) {
-                alert('Firebaseに接続されていません');
-                return;
-            }
-            
-            roomId = inputRoomId;
-            roomRef = database.ref(`rooms/${roomId}`);
-            playerRole = 'gote'; // 参加者は後手
-            
-            // 部屋存在確認
-            roomRef.once('value', (snapshot) => {
-                if(!snapshot.exists()) {
-                    alert('部屋が存在しません');
-                    return;
-                }
-                
-                // UI更新
-                document.getElementById('roomId').textContent = roomId;
-                document.getElementById('playerRole').textContent = 'あなたは後手です';
-                document.getElementById('roomInfo').classList.add('show');
-                document.getElementById('createRoomBtn').disabled = true;
-                document.getElementById('joinRoomBtn').disabled = true;
-                
-                console.log(`部屋参加完了: ${roomId}`);
-            });
-        }
-        
-        // ゲームリセット
-        function resetGame() {
-            console.log('ゲームリセット');
-            currentPlayer = 'sente';
-            selectedCell = null;
-            initializeBoard();
-        }
-        
-        // 部屋退出
-        function leaveRoom() {
-            console.log('部屋退出');
-            roomRef = null;
-            playerRole = null;
-            roomId = null;
-            
-            // UI初期化
-            document.getElementById('roomInfo').classList.remove('show');
-            document.getElementById('createRoomBtn').disabled = false;
-            document.getElementById('joinRoomBtn').disabled = false;
-            document.getElementById('roomIdInput').value = '';
-            
-            resetGame();
-        }
-        
-        // イベントリスナー設定
+        // ボタンのイベントリスナー設定
         function setupEventListeners() {
             console.log('イベントリスナー設定');
-            document.getElementById('createRoomBtn').addEventListener('click', createRoom);
-            document.getElementById('joinRoomBtn').addEventListener('click', joinRoom);
-            document.getElementById('resetBtn').addEventListener('click', resetGame);
-            document.getElementById('leaveBtn').addEventListener('click', leaveRoom);
+            
+            document.getElementById('createRoomBtn').addEventListener('click', function() {
+                console.log('部屋作成ボタンクリック');
+                alert('部屋作成機能（未実装）');
+            });
+            
+            document.getElementById('joinRoomBtn').addEventListener('click', function() {
+                console.log('部屋参加ボタンクリック');
+                alert('部屋参加機能（未実装）');
+            });
         }
         
         // 初期化
@@ -528,15 +281,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM読み込み完了');
             initialize();
-        });
-        
-        // バックアップ初期化（念のため）
-        window.addEventListener('load', function() {
-            console.log('window.load実行');
-            if(!database) {
-                console.log('バックアップ初期化実行');
-                initialize();
-            }
         });
         
         console.log('スクリプト読み込み完了');
